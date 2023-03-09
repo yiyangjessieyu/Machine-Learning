@@ -1,6 +1,5 @@
 from itertools import product
 
-
 def all_possible_functions(X):
     input_space = list(X)
     all_functions = set()
@@ -21,6 +20,9 @@ def all_possible_functions(X):
     return all_functions
 
 
+def consistent(h, D):
+    return all(h(input_x) == output for input_x, output in D)
+
 def version_space(H, D):
     """
     takes a set of hypotheses H, and a training data set D, and return its version space
@@ -34,6 +36,7 @@ def version_space(H, D):
 
     :return: a set which will be a subset of (or equal to) H
     """
+    return {h for h in H if consistent(h, D)}
 
 
 X = {"green", "purple"}  # an input space with two elements
