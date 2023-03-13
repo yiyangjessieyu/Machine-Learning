@@ -33,9 +33,9 @@ class DTNode:
             return self.decision
 
         else:
-            i = self.decision(input_object)  # function that indicates which child should be followed
-            child_node = self.children[i]
-            return child_node.predict(child_node.decision)
+            i = self.decision(input_object)  # function that indicates index of which child to followed
+            child_node = self.children[i]  # maps the output of the decision function to a specific child.
+            return child_node.predict(input_object)
 
 
 # The following (leaf) node will always predict True
@@ -55,3 +55,19 @@ tree_root.children = [yes_node, no_node]
 
 print(tree_root.predict((False, 'Red', 3.5)))
 print(tree_root.predict((False, 'Green', 6.1)))
+
+tt = DTNode(False)
+tf = DTNode(True)
+ft = DTNode(True)
+ff = DTNode(False)
+t = DTNode(lambda v: 0 if v[1] else 1)
+f = DTNode(lambda v: 0 if v[1] else 1)
+t.children = [tt, tf]
+f.children = [ft, ff]
+n = DTNode(lambda v: 0 if v[0] else 1)
+n.children = [t, f]
+
+print(n.predict((True, True)))
+print(n.predict((True, False)))
+print(n.predict((False, True)))
+print(n.predict((False, False)))
