@@ -7,14 +7,11 @@ class DTNode:
 
     def __init__(self, decision, children=[]):
         """
-        A DTNode object must be initialisable with a decision,
         :param decision:
-            1.  either a function that takes an object (typically a feature vector) and
-                indicates which child should be followed (when the object is node is a decision node);
+            1.  either a function that takes an object (typically a feature vector) and return index of next child
             2.  or a value which represents the classification or regression result (when the object is a leaf node).
         :param children:
-            set to a data structure that maps the output of the decision function to a specific child.
-            We assume the output of the decision function is an index into a list.
+            maps the output of the decision function to a specific child.
         """
         self.decision = decision
         self.children = children
@@ -22,16 +19,13 @@ class DTNode:
     def leaves(self):
         if len(self.children) == 0:
             return 1
-
         else:
             return sum([child_node.leaves() for child_node in self.children])
 
     def predict(self, input_object):
         """
-        recursive method
         :param input_object:
-            (e.g. a feature vector).
-            If it's a leaf node, the input can be anything. It's simply ignored
+            A feature vector. If it's a leaf node, the input can be anything. It's simply ignored
         :return:
             result of the decision tree for that input.
         """
