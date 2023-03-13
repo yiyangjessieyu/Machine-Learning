@@ -5,7 +5,7 @@ class DTNode:
         2. leaf nodes.
     """
 
-    def __init__(self, decision, children=None):
+    def __init__(self, decision, children=[]):
         """
         A DTNode object must be initialisable with a decision,
         :param decision:
@@ -28,7 +28,15 @@ class DTNode:
         :return:
             result of the decision tree for that input.
         """
-        return self.decision
+
+        if not callable(self.decision):
+            return self.decision
+
+        else:
+            i = self.decision(input_object)  # function that indicates which child should be followed
+            child_node = self.children[i]
+            return child_node.predict(child_node.decision)
+
 
 # The following (leaf) node will always predict True
 node = DTNode(True)
@@ -39,3 +47,11 @@ print(node.predict(x))
 
 # Sine it's a leaf node, the input can be anything. It's simply ignored.
 print(node.predict(None))
+
+yes_node = DTNode("Yes")
+no_node = DTNode("No")
+tree_root = DTNode(lambda x: 0 if x[2] < 4 else 1)
+tree_root.children = [yes_node, no_node]
+
+print(tree_root.predict((False, 'Red', 3.5)))
+print(tree_root.predict((False, 'Green', 6.1)))
