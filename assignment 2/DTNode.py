@@ -1,20 +1,16 @@
 class DTNode:
     """
-    Node for a decision tree used as both
-        1. decision, and
-        2. leaf nodes.
+    Node for a decision tree used as both 1. decision, and 2. leaf nodes.
     """
 
-    def __init__(self, decision, children=[]):
+    def __init__(self, decision):
         """
         :param decision:
             1.  either a function that takes an object (typically a feature vector) and return index of next child
             2.  or a value which represents the classification or regression result (when the object is a leaf node).
-        :param children:
-            maps the output of the decision function to a specific child.
         """
         self.decision = decision
-        self.children = children
+        self.children = [] # maps the output of the decision function to a specific child.
 
     def leaves(self):
         if len(self.children) == 0:
@@ -24,10 +20,8 @@ class DTNode:
 
     def predict(self, input_object):
         """
-        :param input_object:
-            A feature vector. If it's a leaf node, the input can be anything. It's simply ignored
-        :return:
-            result of the decision tree for that input.
+        :param input_object: A feature vector. If it's a leaf node, the input can be anything. It's simply ignored
+        :return: result of the decision tree for that input.
         """
 
         if not callable(self.decision):

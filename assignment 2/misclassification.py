@@ -8,7 +8,6 @@ def pmk(Qm, k):
     return (1/len(Qm)) * sum([1 for x, y in Qm if y == k])
 
 def misclassification(dataset):
-
     K = set([y for x, y in dataset])
     return 1 - max([pmk(dataset, k) for k in K])
 
@@ -18,7 +17,7 @@ def gini(dataset):
 
 def entropy(dataset):
     K = set([y for x, y in dataset])
-    return -1 * sum([pmk(dataset, i) * math.log(pmk(dataset, i), 2) for i in K])
+    return -1 * sum([pmk(dataset, k) * math.log(pmk(dataset, k), 2) for k in K])
 
 data = [
     ((False, False), False),

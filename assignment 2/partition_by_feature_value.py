@@ -2,11 +2,8 @@ from pprint import pprint
 
 def partition_by_feature_value(dataset, feature_index):
     """
-    :param dataset: list of pairs (x, y). For this quiz, we assume x, y are categorical.
-        1. x is a feature vector,
-        2. y is a classification (label).
-    :param feature_index:
-        index in x of dataset, to be partitioned by
+    :param dataset: list of (categorical feature vector x, classification y) pairs
+    :param feature_index: index in x of dataset, to be partitioned by
     :return: a pair, where the
         1. first element is a "separator" function,
             * takes a feature vector, eg. f((True, True))
