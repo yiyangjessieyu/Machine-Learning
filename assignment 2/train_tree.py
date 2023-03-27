@@ -86,23 +86,33 @@ def entropy(dataset):
     return -1 * sum([pmk(dataset, k) * math.log(pmk(dataset, k), 2) for k in K])
 
 
-def train_children(dataset, criterion, i):
-    # print("#NEW dataset", dataset)
-    # print("(dataset[0][0])", dataset[0][0], len(('Sunny', 'Hot', 'High', 'Weak')))
-    n = 0 if len(dataset) == 0 else len(dataset[0][0])
+def train_children(dataset, criterion, M_possible_partitions):
 
-    if i >= n:
-        return DTNode(dataset[0][1])
+    if M_possible_partitions == {}:
+        return DTNode(dataset)
 
-    else:
-
+    M_possible_impurities = []
+    for i in M_possible_partitions:
         f, p = partition_by_feature_value(dataset, i)
+        M_possible_impurities.append((calculate_G(p, criterion), i))
+    print(888888888)
+    print(dataset)
+    print(M_possible_impurities)
+    print(min(M_possible_impurities)[1])
+    min_impurity = min(M_possible_impurities)[1]
+    M_possible_partitions.remove(min_impurity)
 
-        node = DTNode(f)
-        node.children = [train_children(p[0], criterion, i + 1),
-                         train_children(p[1], criterion, i + 1)]
-        return node
+    f, p = partition_by_feature_value(dataset, min_impurity)
+    node = DTNode(f)
+    node.children = [train_children(p[0], criterion, M_possible_partitions),
+                     train_children(p[1], criterion, M_possible_partitions)]
 
+    return node
+
+def calculate_G(Qm, criterion):
+    left, right = Qm[0], Qm[1]
+    print("CALCULATE", left, right, ((len(left)/len(Qm)) * criterion(left)) + ((len(right)/len(Qm)) * criterion(right)))
+    return ((len(left)/len(Qm)) * criterion(left)) + ((len(right)/len(Qm)) * criterion(right))
 
 def train_tree(dataset, criterion):
     """
@@ -112,7 +122,9 @@ def train_tree(dataset, criterion):
     :return: DTNode: object that is the root of the tree
     """
 
-    node = train_children(dataset, criterion, 0)
+    M_possible_partitions = set(range(0, len(dataset[0][0])))
+
+    node = train_children(dataset, criterion, M_possible_partitions)
 
     return node
 
