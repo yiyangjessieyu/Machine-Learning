@@ -15,25 +15,24 @@ class DTNode:
         self.decision = decision
         self.children = []  # maps the output of the decision function to a specific child.
 
+    def __repr__(self):
+        return str(self.decision) + "\n" + (str(self.children) if len(self.children) > 0 else "")
+
     def leaves(self):
-        if len(self.children) == 0:
-            return 1
-        else:
-            return sum([child_node.leaves() for child_node in self.children])
+        return 1 if len(self.children) == 0 else sum([child_node.leaves() for child_node in self.children])
 
     def predict(self, input_object):
         """
-        :param input_object: A feature vector. If it's a leaf node, the input can be anything. It's simply ignored
+        :param input_object: A feature vector.
         :return: result of the decision tree for that input.
         """
 
-        if not callable(self.decision):
-            return self.decision
-
-        else:
+        if callable(self.decision):
             i = self.decision(input_object)  # function that indicates index of which child to followed
             child_node = self.children[i]  # maps the output of the decision function to a specific child.
             return child_node.predict(input_object)
+        else:
+            return self.decision # If it's a leaf node, the input can be anything. It's simply ignored
 
 
 def partition_by_feature_value(dataset, feature_index):
@@ -49,20 +48,17 @@ def partition_by_feature_value(dataset, feature_index):
             * where each feature vector x in each dataset has the same x[i] value.
     """
 
-    x, y, = dataset[0]
-    match = x[feature_index]
-    partition = [[], []]
-    for x, y in dataset:
-        if x[feature_index] == match:
-            partition[1].append((x, y))
-        else:
-            partition[0].append((x, y))
+    m_classifications = list(set(x[feature_index] for x, y in dataset))
 
     def f(feature_vector):
-        for x, y in partition[1]:
-            if feature_vector == x:
-                return 1
-        return 0
+        for i, classification in enumerate(m_classifications):
+            if feature_vector[feature_index] == classification:
+                return i
+
+    partition = [[] for i in range(len(m_classifications))]
+    for x, y in dataset:
+        index = f(x)
+        partition[index].append((x, y))
 
     return f, partition
 
@@ -86,33 +82,35 @@ def entropy(dataset):
     return -1 * sum([pmk(dataset, k) * math.log(pmk(dataset, k), 2) for k in K])
 
 
-def train_children(dataset, criterion, M_possible_partitions):
-
-    if M_possible_partitions == {}:
-        return DTNode(dataset)
-
-    M_possible_impurities = []
-    for i in M_possible_partitions:
-        f, p = partition_by_feature_value(dataset, i)
-        M_possible_impurities.append((calculate_G(p, criterion), i))
-    print(888888888)
-    print(dataset)
-    print(M_possible_impurities)
-    print(min(M_possible_impurities)[1])
-    min_impurity = min(M_possible_impurities)[1]
-    M_possible_partitions.remove(min_impurity)
-
-    f, p = partition_by_feature_value(dataset, min_impurity)
-    node = DTNode(f)
-    node.children = [train_children(p[0], criterion, M_possible_partitions),
-                     train_children(p[1], criterion, M_possible_partitions)]
-
-    return node
-
 def calculate_G(Qm, criterion):
-    left, right = Qm[0], Qm[1]
-    print("CALCULATE", left, right, ((len(left)/len(Qm)) * criterion(left)) + ((len(right)/len(Qm)) * criterion(right)))
-    return ((len(left)/len(Qm)) * criterion(left)) + ((len(right)/len(Qm)) * criterion(right))
+    return sum([(len(Qmi) / len(Qm)) * criterion(Qmi) for Qmi in Qm])
+
+
+def most_common_classification(lst):
+    return max(set(lst), key=lst.count)
+
+
+def get_node(dataset, criterion, features):
+    classification = dataset[0][1]
+    class_labels = [y for x, y in dataset]
+
+    if len(set(class_labels)) == 1:
+        return DTNode(classification)
+
+    elif len(features) == 0:
+        return DTNode(most_common_classification(class_labels))
+
+    else:
+        impurities = [(calculate_G(partition_by_feature_value(dataset, i)[1], criterion), i) for i in features]
+        best_index = min(impurities)[1]
+
+        f, p = partition_by_feature_value(dataset, best_index)
+
+        node = DTNode(f)
+        node.children = [get_node(child_dataset, criterion, features - {best_index}) for child_dataset in p]
+
+        return node
+
 
 def train_tree(dataset, criterion):
     """
@@ -121,12 +119,8 @@ def train_tree(dataset, criterion):
     :param criterion: function that evaluates a dataset for a specific impurity measure
     :return: DTNode: object that is the root of the tree
     """
-
-    M_possible_partitions = set(range(0, len(dataset[0][0])))
-
-    node = train_children(dataset, criterion, M_possible_partitions)
-
-    return node
+    x, y = dataset[0]
+    return get_node(dataset, criterion, set(range(len(x))))
 
 
 dataset = [
@@ -136,8 +130,8 @@ dataset = [
     ((False, False), False)
 ]
 t = train_tree(dataset, misclassification)
-print(t.predict((True, False)))  # True
-print(t.predict((False, False)))  # False
+print(t.predict((True, False)))
+print(t.predict((False, False)))
 
 dataset = [
     (("Sunny", "Hot", "High", "Weak"), False),
@@ -156,5 +150,105 @@ dataset = [
     (("Rain", "Mild", "High", "Strong"), False),
 ]
 t = train_tree(dataset, misclassification)
-print(t.predict(("Overcast", "Cool", "Normal", "Strong"))) #True
-print(t.predict(("Sunny", "Cool", "Normal", "Strong"))) #True
+print(t.predict(("Overcast", "Cool", "Normal", "Strong")))
+print(t.predict(("Sunny", "Cool", "Normal", "Strong")))
+
+# The following (leaf) node will always predict True
+node = DTNode(True)
+
+# Prediction for the input (1, 2, 3):
+x = (1, 2, 3)
+print(node.predict(x))
+
+# Sine it's a leaf node, the input can be anything. It's simply ignored.
+print(node.predict(None))
+# True
+# True
+yes_node = DTNode("Yes")
+no_node = DTNode("No")
+tree_root = DTNode(lambda x: 0 if x[2] < 4 else 1)
+tree_root.children = [yes_node, no_node]
+
+print(tree_root.predict((False, 'Red', 3.5)))
+print(tree_root.predict((False, 'Green', 6.1)))
+
+n = DTNode(True)
+print(n.leaves())
+#
+t = DTNode(True)
+f = DTNode(False)
+n = DTNode(lambda v: 0 if not v else 1)
+n.children = [t, f]
+print(n.leaves())
+#
+tt = DTNode(False)
+tf = DTNode(True)
+ft = DTNode(True)
+ff = DTNode(False)
+t = DTNode(lambda v: 0 if v[1] else 1)
+f = DTNode(lambda v: 0 if v[1] else 1)
+t.children = [tt, tf]
+f.children = [ft, ff]
+n = DTNode(lambda v: 0 if v[0] else 1)
+n.children = [t, f]
+
+print(n.leaves())
+
+from pprint import pprint
+
+dataset = [
+    ((True, True), False),
+    ((True, False), True),
+    ((False, True), True),
+    ((False, False), False),
+]
+f, p = partition_by_feature_value(dataset, 0)
+pprint(sorted(sorted(partition) for partition in p))
+
+partition_index = f((True, True))
+# Everything in the "True" partition for feature 0 is true
+print(all(x[0] == True for x, c in p[partition_index]))
+partition_index = f((False, True))
+# Everything in the "False" partition for feature 0 is false
+print(all(x[0] == False for x, c in p[partition_index]))
+# [[((False, False), False), ((False, True), True)],
+#  [((True, False), True), ((True, True), False)]]
+# True
+# True
+from pprint import pprint
+
+dataset = [
+    (("a", "x", 2), False),
+    (("b", "x", 2), False),
+    (("a", "y", 5), True),
+]
+f, p = partition_by_feature_value(dataset, 1)
+pprint(sorted(sorted(partition) for partition in p))
+partition_index = f(("a", "y", 5))
+# everything in the "y" partition for feature 1 has a y
+print(all(x[1] == "y" for x, c in p[partition_index]))
+
+data = [
+    ((False, False), False),
+    ((False, True), True),
+    ((True, False), True),
+    ((True, True), False)
+]
+print("{:.4f}".format(misclassification(data)))
+print("{:.4f}".format(gini(data)))
+print("{:.4f}".format(entropy(data)))
+# 0.5000
+# 0.5000
+# 1.0000
+
+data = [
+    ((0, 1, 2), 1),
+    ((0, 2, 1), 2),
+    ((1, 0, 2), 1),
+    ((1, 2, 0), 3),
+    ((2, 0, 1), 3),
+    ((2, 1, 0), 3)
+]
+print("{:.4f}".format(misclassification(data)))
+print("{:.4f}".format(gini(data)))
+print("{:.4f}".format(entropy(data)))
