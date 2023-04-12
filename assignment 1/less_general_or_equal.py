@@ -1,8 +1,5 @@
 def less_general_or_equal(ha, hb, X):
-    ha_outputs = [ha(x) for x in X]
-    hb_outputs = [hb(x) for x in X]
-
-    return all(hb_outputs[i] == True for i in range(len(X)) if ha_outputs[i] == True)
+    return all([ha(x) <= hb(x) for x in X])
 
 
 X = list(range(1000))
