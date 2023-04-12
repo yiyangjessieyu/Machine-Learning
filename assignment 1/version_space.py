@@ -21,7 +21,7 @@ def all_possible_functions(X):
 
 
 def consistent(h, D):
-    return all(h(input_x) == output for input_x, output in D)
+    return all([h(x) == y for x, y in D])
 
 def version_space(H, D):
     """
