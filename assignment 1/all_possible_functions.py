@@ -2,28 +2,26 @@ from itertools import product
 
 def all_possible_functions(X):
 
-    input_space = list(X)
+    X = list(X)
 
-    all_functions = set()
+    F = set()
 
-    bool_tups = list(product([True, False], repeat=len(X)))
+    Y = list(product([True, False], repeat=len(X)))
 
-    for bool_tup in bool_tups:
-        # bool_tup is result from 1 function.
+    for y in Y:
+        # y is result from 1 function.
 
         # function that will
-        # produce a element from bool_tup depending on input
-        def f(x, bool_tup=bool_tup):
+        # produce a element from y (T/F) depending on input
+        def f(x, y=y):
 
-            i = input_space.index(x)
-            bool = bool_tup[i]
-            # print("bool_tup", bool_tup, id(bool_tup))
-            # print("x, i, bool", x, i, bool)
+            i = X.index(x)
+            bool = y[i]
             return bool
 
-        all_functions.add(f)
+        F.add(f)
 
-    return all_functions
+    return F
 
 
 X = {"green", "purple"}  # an input space with two elements
