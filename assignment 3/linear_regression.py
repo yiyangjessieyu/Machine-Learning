@@ -1,31 +1,6 @@
 import numpy as np
 
 
-def dot_product(a, b, n):
-    return sum([a[i] * b[i] for i in range(n)])
-
-
-def linear_regression_1d(data):
-    """
-    Where   x is vector of feature values, and
-            y is the vector of response values, and
-            n is the length of these vectors.
-    :param data: list of pairs (feature value x, response value y)
-    :return: list of pairs (gradient m, intercept c)
-    """
-
-    x, y = zip(*data)
-
-    sum_x, sum_y, n = sum(x), sum(y), len(data)
-
-    # m = (n x.y - ∑x ∑y) / (n x.x - (∑x)**2), the slope of the line of least squares fit.
-    m = (n * dot_product(x, y, n) - sum_x * sum_y) / (n * dot_product(x, x, n) - sum_x ** 2)
-
-    # c = (∑y - m∑x)/n, the intercept of the line of least squares fit.
-    c = (sum_y - m * sum_x) / n
-
-    return (m, c)
-
 def linear_regression(xs, ys):
     """
     Takes 2 numpy arrays as parameters.
@@ -38,23 +13,34 @@ def linear_regression(xs, ys):
 
     a = np.asarray([])
 
-    for col_i in range(col_n):
-        X = xs[ :, col_i]
+    X_b = np.c_[np.ones((row_m, 1)), xs]  # add x0 = 1 to each instance
+    theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(ys)
 
-        theta = np.dot(
-            np.linalg.inv(np.multiply(X.T, X)),
-            np.dot(X.T, ys)
-        )
+    # X_new = np.array([[0], [1]])
+    # X_new_b = np.c_[np.ones((2, 1)), X_new]  # add x0 = 1 to each instance
+    # y_predict = X_new_b.dot(theta_best)
+    # for col_i in range(col_n):
+    #     X = xs[ :, col_i]
+    #
+    #     theta = np.dot(
+    #         np.linalg.inv(
+    #             np.dot(
+    #                 X.T.reshape(row_m, 1),
+    #                 X.reshape(1, row_m))
+    #         ),
+    #         np.dot(X.T, ys)
+    #     )
+    #
+    #     np.append(a, theta)
 
-        np.append(a, theta)
-
-    return a
+    return theta_best
 
 
 xs = np.arange(5).reshape((-1, 1))
 ys = np.arange(1, 11, 2)
-# print(xs)
-# print(ys)
-# XT = xs.transpose()
-# print(XT)
+print(linear_regression(xs, ys))
+
+xs = np.array([[1, 2, 3, 4],
+               [6, 2, 9, 1]]).T
+ys = np.array([7, 5, 14, 8]).T
 print(linear_regression(xs, ys))
