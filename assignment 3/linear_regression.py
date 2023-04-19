@@ -11,27 +11,8 @@ def linear_regression(xs, ys):
     """
     row_m, col_n = xs.shape
 
-    a = np.asarray([])
-
     X_b = np.c_[np.ones((row_m, 1)), xs]  # add x0 = 1 to each instance
     theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(ys)
-
-    # X_new = np.array([[0], [1]])
-    # X_new_b = np.c_[np.ones((2, 1)), X_new]  # add x0 = 1 to each instance
-    # y_predict = X_new_b.dot(theta_best)
-    # for col_i in range(col_n):
-    #     X = xs[ :, col_i]
-    #
-    #     theta = np.dot(
-    #         np.linalg.inv(
-    #             np.dot(
-    #                 X.T.reshape(row_m, 1),
-    #                 X.reshape(1, row_m))
-    #         ),
-    #         np.dot(X.T, ys)
-    #     )
-    #
-    #     np.append(a, theta)
 
     return theta_best
 
