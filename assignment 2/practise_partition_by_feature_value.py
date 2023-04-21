@@ -11,9 +11,9 @@ def partition_by_feature_value(dataset, feature_index):
     def f(x):
 
         for i, p, in enumerate(partition):
-            x_list, _ = zip(*p)
-            matches = [x_tup[feature_index] for x_tup in x_list]
-            if x[feature_index] in matches:
+            x_list, y_list = zip(*p)
+            print("000000000", i, x_list, y_list)
+            if x in x_list:
                 return i
 
     return f, partition
