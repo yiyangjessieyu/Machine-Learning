@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 def sigmoid(x):
@@ -23,9 +24,13 @@ def logistic_regression(xs, ys, alpha, num_iterations):
 
     # no closed-form solution so need to perform gradient descent;
     # Stochastic gradient descent, starting with a vector of zeros.
+    #keywords to search^ + learning rate iteration
 
+    row_m, col_n = xs.shape
+    X_b = np.c_[np.ones((row_m, 1)), xs]
+    for i in range(num_iterations):
+        X_b += X_b + alpha * () * xs
 
-import numpy as np
 
 xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1))
 ys = np.array([0, 0, 0, 1, 1, 1])
