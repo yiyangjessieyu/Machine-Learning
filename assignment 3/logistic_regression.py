@@ -21,15 +21,25 @@ def logistic_regression(xs, ys, alpha, num_iterations):
         Produces value between 0-1 indicating the probability of that input belonging to the positive class.
     """
 
-
     # no closed-form solution so need to perform gradient descent;
     # Stochastic gradient descent, starting with a vector of zeros.
-    #keywords to search^ + learning rate iteration
 
     row_m, col_n = xs.shape
-    theta = np.r_[np.ones((1, col_n))]
+    theta = np.c_[np.zeros((1, row_m))]
 
-    def model(x)
+    for iterate in range(num_iterations):
+        for row_i in range(row_m):
+            z = sum(np.dot(theta.T, xs[row_i]))
+            theta[:, row_i] += theta[:, row_i] + alpha * (ys[row_i] - sigmoid(z)) * xs[row_i]
+
+    def model(unseen_x):
+        row_m = unseen_x.shape
+        print(unseen_x.shape, theta.T.shape)
+        X_b = np.c_[np.zeros((1, row_m)), unseen_x]  # add x0 = 1 to each instance
+        z = sum(X_b.T.dot(X_b))
+        return sigmoid(z)
+
+    return model
 
 
 xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1))

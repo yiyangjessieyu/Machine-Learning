@@ -12,6 +12,7 @@ def linear_regression(xs, ys):
     row_m, col_n = xs.shape
 
     X_b = np.c_[np.ones((row_m, 1)), xs]  # add x0 = 1 to each instance
+    print(xs.shape, X_b.shape)
     theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(ys)
 
     return theta_best
