@@ -2,8 +2,8 @@ import math
 import numpy as np
 
 
-def sigmoid(x):
-    return 1 / (1 + math.exp(-x))
+def sigmoid(z):
+    return 1 / (1 + math.exp(-z))
 
 
 def logistic_regression(xs, ys, alpha, num_iterations):
@@ -27,9 +27,9 @@ def logistic_regression(xs, ys, alpha, num_iterations):
     #keywords to search^ + learning rate iteration
 
     row_m, col_n = xs.shape
-    X_b = np.c_[np.ones((row_m, 1)), xs]
-    for i in range(num_iterations):
-        X_b += X_b + alpha * () * xs
+    theta = np.r_[np.ones((1, col_n))]
+
+    def model(x)
 
 
 xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1))
