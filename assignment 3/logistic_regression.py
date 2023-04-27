@@ -42,7 +42,7 @@ def logistic_regression(xs, ys, alpha, num_iterations):
     return model
 
 
-xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1))
+xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1)) #WHY IS THIS JUST 1 COL TODO
 ys = np.array([0, 0, 0, 1, 1, 1])
 model = logistic_regression(xs, ys, 0.05, 10000)
 test_inputs = np.array([1.5, 4, 10, 20, 30, 40, 50, 60, 70, 80, 90, 101.8, 97]).reshape((-1, 1))
