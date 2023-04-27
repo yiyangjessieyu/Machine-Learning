@@ -22,12 +22,19 @@ def logistic_regression(xs, ys, alpha, num_iterations):
     """
     # no closed-form solution so need to perform gradient descent; Stochastic gradient descent,
     examples_n, features_j = xs.shape
-    theta = np.c_[np.zeros((1, features_j))]  # TODO starting with a vector of zeros.
 
-    for iterate in range(num_iterations):
+    xs = np.c_[np.ones((examples_n, 1)), xs]  # add x0 = 1 to each instance
+
+    theta = np.c_[np.zeros((1, features_j + 1))]
+    print("theta",theta)
+
+    for iterate in range(2):
         for example_i in range(examples_n):
             for j in range(features_j):
-                z = sum(np.dot(theta.T, xs[example_i]))
+                print("theta.T", theta.T)
+                print("xs[example_i]",xs[example_i].reshape(1, features_j+1))
+                z = theta.T * xs[example_i].reshape(1, features_j+1)
+                print("z", z)
                 theta[:, j] += theta[:, j] + alpha * (ys[example_i] - sigmoid(z)) * xs[example_i, j]
 
 
@@ -38,7 +45,7 @@ def logistic_regression(xs, ys, alpha, num_iterations):
     return model
 
 
-xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1))  # TODO WHY IS THIS JUST 1 COL
+xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1))
 ys = np.array([0, 0, 0, 1, 1, 1])
 model = logistic_regression(xs, ys, 0.05, 10000)
 test_inputs = np.array([1.5, 4, 10, 20, 30, 40, 50, 60, 70, 80, 90, 101.8, 97]).reshape((-1, 1))
