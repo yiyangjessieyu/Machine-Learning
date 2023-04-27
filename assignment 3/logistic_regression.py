@@ -20,22 +20,18 @@ def logistic_regression(xs, ys, alpha, num_iterations):
         function input: one-dimensional array (vector) of values,
         Produces value between 0-1 indicating the probability of that input belonging to the positive class.
     """
-
     # no closed-form solution so need to perform gradient descent; Stochastic gradient descent,
-
-
     row_m, col_n = xs.shape
-    theta = np.c_[np.zeros((1, row_m))] # TODO starting with a vector of zeros.
+    theta = np.c_[np.zeros((1, col_n))]  # TODO starting with a vector of zeros.
 
-    for iterate in range(1):
+    for iterate in range(num_iterations):
         for row_i in range(row_m):
-            z = sum(np.dot(theta.T, xs[row_i]))
-            theta[:, row_i] += theta[:, row_i] + alpha * (ys[row_i] - sigmoid(z)) * xs[row_i]
+            for col_j in range(col_n):
+                z = sum(np.dot(theta.T, xs[row_i]))
+                theta[:, col_j] += theta[:, col_j] + alpha * (ys[row_i] - sigmoid(z)) * xs[row_i, col_j]
 
-    print(theta)
 
     def model(unseen_x):
-        """:param unseen_x: 1D feature vector"""
         z = sum(theta.T * unseen_x[0])  # TODO needs to be an int, dot product?
         print("Z is ", z)
         return sigmoid(z)
