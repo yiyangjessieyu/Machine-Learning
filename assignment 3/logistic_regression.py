@@ -27,7 +27,7 @@ def logistic_regression(xs, ys, alpha, num_iterations):
     row_m, col_n = xs.shape
     theta = np.c_[np.zeros((1, row_m))] # TODO starting with a vector of zeros.
 
-    for iterate in range(num_iterations):
+    for iterate in range(1):
         for row_i in range(row_m):
             z = sum(np.dot(theta.T, xs[row_i]))
             theta[:, row_i] += theta[:, row_i] + alpha * (ys[row_i] - sigmoid(z)) * xs[row_i]
@@ -36,7 +36,8 @@ def logistic_regression(xs, ys, alpha, num_iterations):
 
     def model(unseen_x):
         """:param unseen_x: 1D feature vector"""
-        z = theta.T * unseen_x[0]  # TODO needs to be an int, dot product?
+        z = sum(theta.T * unseen_x[0])  # TODO needs to be an int, dot product?
+        print("Z is ", z)
         return sigmoid(z)
 
     return model
