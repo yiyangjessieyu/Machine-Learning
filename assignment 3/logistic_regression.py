@@ -21,28 +21,28 @@ def logistic_regression(xs, ys, alpha, num_iterations):
         Produces value between 0-1 indicating the probability of that input belonging to the positive class.
     """
 
-    # no closed-form solution so need to perform gradient descent;
-    # Stochastic gradient descent, starting with a vector of zeros.
+    # no closed-form solution so need to perform gradient descent; Stochastic gradient descent,
+
 
     row_m, col_n = xs.shape
-    theta = np.c_[np.zeros((1, row_m))]
+    theta = np.c_[np.zeros((1, row_m))] # TODO starting with a vector of zeros.
 
     for iterate in range(num_iterations):
         for row_i in range(row_m):
             z = sum(np.dot(theta.T, xs[row_i]))
             theta[:, row_i] += theta[:, row_i] + alpha * (ys[row_i] - sigmoid(z)) * xs[row_i]
 
+    print(theta)
+
     def model(unseen_x):
-        row_m = unseen_x.shape
-        print(unseen_x.shape, theta.T.shape)
-        X_b = np.c_[np.zeros((1, row_m)), unseen_x]  # add x0 = 1 to each instance
-        z = sum(X_b.T.dot(X_b))
+        """:param unseen_x: 1D feature vector"""
+        z = theta.T * unseen_x[0]  # TODO needs to be an int, dot product?
         return sigmoid(z)
 
     return model
 
 
-xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1)) #WHY IS THIS JUST 1 COL TODO
+xs = np.array([1, 2, 3, 101, 102, 103]).reshape((-1, 1))  # TODO WHY IS THIS JUST 1 COL
 ys = np.array([0, 0, 0, 1, 1, 1])
 model = logistic_regression(xs, ys, 0.05, 10000)
 test_inputs = np.array([1.5, 4, 10, 20, 30, 40, 50, 60, 70, 80, 90, 101.8, 97]).reshape((-1, 1))
