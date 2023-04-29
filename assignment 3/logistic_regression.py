@@ -2,10 +2,6 @@ import math
 import numpy as np
 
 
-def sigmoid(z):
-    return 1 / (1 + math.exp(-z))
-
-
 def logistic_regression(xs, ys, alpha, num_iterations):
     """
     In Logistic regression, given a training dataset of a binary classification problem where outputs are either positive
@@ -20,26 +16,19 @@ def logistic_regression(xs, ys, alpha, num_iterations):
         function input: one-dimensional array (vector) of values,
         Produces value between 0-1 indicating the probability of that input belonging to the positive class.
     """
-    # no closed-form solution so need to perform gradient descent; Stochastic gradient descent,
-    examples_n, features_j = xs.shape
+    sigmoid = lambda x: 1 / (1 + math.exp(-x))
 
-    xs = np.c_[np.ones((examples_n, 1)), xs]  # add x0 = 1 to each instance
+    n_examples, d = xs.shape
+    b_xs = np.c_[np.ones((n_examples, 1)), xs]  # add x0 = 1 to each instance
+    theta = np.zeros(d + 1)
 
-    theta = np.c_[np.zeros((1, features_j + 1))]
-    print("theta",theta)
+    for iterate in range(num_iterations):
+        for i in range(n_examples):
+            h = sigmoid(theta @ b_xs[i])
+            theta = theta + alpha * (ys[i] - h) * b_xs[i]
 
-    for iterate in range(2):
-        for example_i in range(examples_n):
-            for j in range(features_j):
-                print("theta.T", theta.T)
-                print("xs[example_i]",xs[example_i].reshape(1, features_j+1))
-                z = theta.T * xs[example_i].reshape(1, features_j+1)
-                print("z", z)
-                theta[:, j] += theta[:, j] + alpha * (ys[example_i] - sigmoid(z)) * xs[example_i, j]
-
-
-    def model(unseen_x):
-        z = sum(theta.T * unseen_x[0])  # TODO needs to be an int, dot product?
+    def model(feature_vector):
+        z = theta[0] + sum([theta[i] * feature_vector[i-1] for i in range(1, d+1)])
         return sigmoid(z)
 
     return model
