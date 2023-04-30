@@ -16,20 +16,18 @@ def linear_regression(xs, ys, basis_functions=None):
         * returns a scalar which is the value of the basis function for that input.
     """
     row_m, col_n = xs.shape
-    xs = np.c_[np.ones((row_m, 1)), xs]  # add x0 = 1 to each instance
+
+    X_b = np.c_[np.ones((row_m, 1)), xs]  # add x0 = 1 to each instance
 
     if basis_functions:
-        n = len(basis_functions)
-        theta = np.zeros(n + 1)
+        for f in basis_functions:
+            fx = np.apply_along_axis(f, 1, X_b)
+            print(fx)
+            return np.linalg.inv(fx.T.dot(fx)).dot(fx.T).dot(ys)
 
-        for i, f in enumerate(basis_functions):
-            mapping = f(xs)
-            theta[i + 1] = np.linalg.inv(mapping.T.dot(mapping)).dot(mapping.T).dot(ys)
+    theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(ys)
 
-    else:
-        theta = np.linalg.inv(xs.T.dot(xs)).dot(xs.T).dot(ys)
-
-    return theta
+    return theta_best
 
 
 xs = np.arange(5).reshape((-1, 1))
