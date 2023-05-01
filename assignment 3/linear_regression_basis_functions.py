@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def linear_regression(xs, ys, basis_functions=None):
     """
     Overcome limitation of non-linear relationship between feature and output.
@@ -15,20 +14,74 @@ def linear_regression(xs, ys, basis_functions=None):
         * Each basis function takes a complete input vector
         * returns a scalar which is the value of the basis function for that input.
     """
-    row_m, col_n = xs.shape
+    n_examples, d = xs.shape
 
-    X_b = np.c_[np.ones((row_m, 1)), xs]  # add x0 = 1 to each instance
+    xs = np.c_[np.ones((n_examples, 1)), xs]  # add x0 = 1 to each instance
 
     if basis_functions:
-        for f in basis_functions:
-            fx = np.apply_along_axis(f, 1, X_b)
-            print(fx)
-            return np.linalg.inv(fx.T.dot(fx)).dot(fx.T).dot(ys)
+        phi = np.ones((ys.shape[0], d))
+        # print(phi)
+        # print(xs)
+        for fi, f in enumerate(basis_functions):
+            for i in range(n_examples):
+                phi[fi] = np.apply_along_axis(f, 0, xs[i])
 
-    theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(ys)
+        xs = phi
 
-    return theta_best
+    return np.linalg.inv(xs.T.dot(xs)).dot(xs.T).dot(ys)
 
+
+# def linear_regression(xs, ys, basis_functions=None):
+#     """
+#     Overcome limitation of non-linear relationship between feature and output.
+#     Extend the features available to our linear model by constructing new features that are
+#     non-linear on the original feature set, are a result of basis functions.
+#     :param xs: 2-dimensional array of training inputs
+#     :param ys: 1-dimensional array of training outputs
+#     :param basis_functions: list of basis functions. When functions are not provided, the algorithm should behave as an
+#     ordinary linear regression using normal equations.
+#     :return: one-dimensional array (vector) of coefficients
+#     where the first elements is the offset and the rest are the coefficients of the corresponding basis functions.
+#         * Each basis function takes a complete input vector
+#         * returns a scalar which is the value of the basis function for that input.
+#     """
+#     n_examples, d = xs.shape
+#
+#     xs = np.c_[np.ones((n_examples, 1)), xs]  # add x0 = 1 to each instance
+#
+#     # Calculate design matrix Phi
+#     Phi = np.ones((ys.shape[0], d))
+#     print(Phi)
+#
+#     for i in range(n_examples):
+#         Phi[i] = np.apply_along_axis(basis_functions[1], 0, xs[i])
+#
+#     # Calculate parameters w and alpha
+#     print(Phi)
+#
+#     w = np.linalg.inv(Phi.T @ Phi) @ Phi.T @ ys
+#     print(w)
+#     alpha = sum((ys - Phi @ w) ** 2) / len(ys)
+#
+#     # if basis_functions:
+#     #     phi = np.ones((ys.shape[0], d))
+#     #     print(phi)
+#     #     for fi, f in enumerate(basis_functions):
+#     #         phi[:, fi+1] = [np.apply_along_axis(f, 0, xs[i]) for i in range(n_examples)]
+#     #         print(phi)
+#
+#
+#
+#     return alpha
+
+# xs = np.arange(5).reshape((-1, 1))
+# ys = np.arange(1, 11, 2)
+# print(linear_regression(xs, ys, None))
+#
+# xs = np.array([[1, 2, 3, 4],
+#                [6, 2, 9, 1]]).T
+# ys = np.array([7, 5, 14, 8]).T
+# print(linear_regression(xs, ys))
 
 xs = np.arange(5).reshape((-1, 1))
 ys = np.array([3, 6, 11, 18, 27])
