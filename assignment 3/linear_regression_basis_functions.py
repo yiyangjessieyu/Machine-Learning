@@ -26,10 +26,11 @@ def linear_regression(xs, ys, basis_functions=None):
             for i in range(n_examples):
                 phi[fi] = np.apply_along_axis(f, 0, xs[i])
 
+        np.linalg.inv(phi.T.dot(phi)).dot(phi.T).dot(ys)
+
         xs = phi
 
     return np.linalg.inv(xs.T.dot(xs)).dot(xs.T).dot(ys)
-
 
 # def linear_regression(xs, ys, basis_functions=None):
 #     """
