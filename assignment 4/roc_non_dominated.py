@@ -9,23 +9,24 @@ class ConfusionMatrix(namedtuple("ConfusionMatrix",
 
 def roc_non_dominated(classifiers):
 
-    print(len(classifiers))
+    weak = set()
 
     if len(classifiers) > 1:
-        print("HERE")
-        recall_rates = [(matrix.true_positive / (matrix.true_positive + matrix.false_negative),
-                         1 - matrix.true_positive / (matrix.true_positive + matrix.false_negative))
+
+        recall_rates = [(matrix.true_positive / (matrix.true_positive + matrix.false_negative), #TPR
+                         matrix.false_positive / (matrix.false_positive + matrix.true_negative)) #FPR
                         for name, matrix in classifiers]
 
         for i, rates in enumerate(recall_rates):
-            TPR_a, FPR_a = rates
-            other_rates = [other_rate for j, other_rate in enumerate(recall_rates) if i != j]
-            is_dominated = all([TPR_a < TPR_b and FPR_a > FPR_b for TPR_b, FPR_b in other_rates])
-            if is_dominated:
-                del classifiers[i]
-                del recall_rates[i]
+            A_TPR, A_FPR = rates
 
-    return classifiers
+            other_rates = [other_rate for j, other_rate in enumerate(recall_rates) if i != j]
+
+            for B_TPR, B_FPR in other_rates:
+                if A_TPR < B_TPR and A_FPR > B_FPR:
+                    weak.add(classifiers[i])
+
+    return list(set(classifiers) - weak)
 
 
 classifiers = [
