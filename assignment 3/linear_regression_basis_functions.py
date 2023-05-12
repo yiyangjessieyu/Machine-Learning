@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def linear_regression(xs, ys, basis_functions=None):
     """
     Overcome limitation of non-linear relationship between feature and output.
