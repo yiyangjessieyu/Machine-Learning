@@ -1,30 +1,30 @@
 import numpy as np
 
 def k_means(dataset, centroids):
-    """
-
-    :param dataset:
-    :param centroids: the cluster centroids µj represent our current guesses for the positions of the centers of the clusters.
-    :return:
-    """
+    centroids = np.array(centroids)  # Convert centroids tuple to numpy array
+    prev_centroids = None
     k = len(centroids)
-    clusters = [] * k
 
-    while converge:
-        # assignment each point to the cluster of the closest centroid
-        # In case of a tie (i.e., there are two closest centroids) choose the centroid that is first in the centroids tuple.
+    # Check for convergence if all values in new_centroids == centroids
+    while np.not_equal(centroids, prev_centroids).any() or prev_centroids is None:
 
-        for xi in dataset:
-            distance = (xi - mean)**2
+        prev_centroids = centroids
 
+        # Assign each data point i to the nearest centroid j
+        difference = ((dataset - centroids[:, np.newaxis]) ** 2).sum(axis=2)
+        clusters = np.argmin(difference, axis=0)
 
-        # re-estimate the cluster centroid based on the data assigned to each
-        means = []
-        for c in clusters:
-            nk = len(c)
-            means.append(sum(c)/nk)
+        # Update each centroid to the mean of the data points assigned to it
+        centroids = np.array(
+            [
+                np.mean(dataset[clusters == i], axis=0) # recalculates the mean for that cluster
+                if (clusters == i).any() # index of data points in the dataset that have been assigned to that centroid
+                else centroids[i] # no data point assigned to this centroid, so the centroid is left unchanged
+                for i in range(k) # iterating over each centroid index i
+             ]
+        )
 
-    return centroids
+    return tuple(centroids)
 
 
 dataset = np.array([
