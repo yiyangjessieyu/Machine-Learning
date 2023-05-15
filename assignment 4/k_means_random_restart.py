@@ -35,59 +35,58 @@ def cluster_points(centroids, dataset):
     for i, point in enumerate(dataset):
         # closest_centroid to that point using the Euclidean distance between the point and each centroid
         # np.argmin() find the index of the minimum value in the 1D array of distances.
-        # There gives the index of the closest centroid to that point.
+        # Therefore gives the index of the closest centroid to that point.
         closest_centroid = np.argmin(np.linalg.norm(centroids - point, axis=1))
         clusters[closest_centroid].append(point)
 
     return clusters
 
 
+def goodness(clusters):
+    # centroids found from the mean of each cluster in each col
+    centroids = [np.mean(cluster, axis=0) for cluster in clusters]
+
+    worst_separation = sum( # sum to find the mean, but don't need to divide by Nk coz math :)
+        [
+            # calculates the Euclidean distance || c1 - c2 ||
+            # equivalent to calculating the mean of the min distance between centroids
+            # distance between centroids equiv to average distance between points in different clusters.
+            np.linalg.norm(c1 - c2) # therefore mean of the min distances between clusters' points.
+            for i, c1 in enumerate(centroids)
+            for j, c2 in enumerate(centroids)
+            if i < j # ensures that each distance is calculated only once, as the distance of centroid i and j are same
+         ]
+    )
+
+    worst_compactness = sum(
+        [
+            # calculates the Euclidean distance between a point and its centroid
+            # where centroid is equiv to average distance between points in different clusters.
+            np.linalg.norm(point - cluster) # therefore mean of the max distances within each cluster's points
+            for cluster in clusters
+            for point in cluster
+         ]
+    )
+
+    # Ratio of how good the clustering is. Higher ratio means
+    # 1) High separation between centroids, and 2) Tightly compacted data points in each cluster around their centroids.
+    return worst_separation / worst_compactness
+
+# def find_distance(a, b):
+#     return np.linalg.norm(a, b, axis=1)
+#
+#
+# def sep(C):
+#     # TODO how does this ensure the minimum?
+#     return sum(min(find_distance(p1, p2)) for c1 in C for c2 in C for p1 in c1 for p2 in c2) / len(C)
+#
+# def cpt(C):
+#     # TODO how does this ensure the max?
+#     return sum([max(find_distance(p1, p2)) for c in C for p1 in c for p2 in c]) / len(C)
+#
 # def goodness(clusters):
-#     # centroids found from the mean of each cluster in each col
-#     centroids = [np.mean(cluster, axis=0) for cluster in clusters]
-#
-#     worst_separation = sum( # sum to find the mean, but don't need to divide by Nk coz math :)
-#         [
-#             # calculates the Euclidean distance || c1 - c2 ||
-#             # equivalent to calculating the mean of the min distance between centroids
-#             # distance between centroids equiv to average distance between points in different clusters.
-#             np.linalg.norm(c1 - c2) # therefore mean of the min distances between clusters' points.
-#             for i, c1 in enumerate(centroids)
-#             for j, c2 in enumerate(centroids)
-#             if i < j # ensures that each distance is calculated only once, as the distance of centroid i and j are same
-#          ]
-#     )
-#
-#     worst_compactness = sum(
-#         [
-#             # calculates the Euclidean distance between a point and its centroid
-#             # where centroid is equiv to average distance between points in different clusters.
-#             np.linalg.norm(point - centroids[i]) # therefore mean of the max distances within each cluster's points
-#             for i, cluster in enumerate(clusters)
-#             for point in cluster
-#          ]
-#     )
-#
-#     # Ratio of how good the clustering is. Higher ratio means
-#     # 1) High separation between centroids, and 2) Tightly compacted data points in each cluster around their centroids.
-#     return worst_separation / worst_compactness
+#     return sep(clusters)/cpt(clusters)
 
-def sep(C):
-    # Compute pairwise distances between data points
-    pairwise_dist = np.array([np.linalg.norm(a - b) for i, c1 in enumerate(C) for j, c2 in enumerate(C) if i < j for a in c1 for b in c2])
-    # Compute smallest distance between different clusters
-    min_dist = np.min(pairwise_dist)
-    return min_dist
-
-def cpt(C):
-    # Compute diameters of each cluster
-    diameters = [np.max([np.linalg.norm(a - b) for a in c for b in c]) for c in C]
-    # Compute mean of diameters
-    mean_diameter = np.mean(diameters)
-    return mean_diameter
-
-def goodness(cluster):
-    return sep(cluster)/cpt(cluster)
 
 def k_means_random_restart(dataset, k, restarts, seed=None):
     """
@@ -124,6 +123,7 @@ def k_means_random_restart(dataset, k, restarts, seed=None):
 
     return max(models, key=lambda x: x[0])[1]
 
+
 # def k_means_random_restart(dataset, k, restarts, seed=None):
 #     # finds the min of each col and max of each col
 #     # zip() to combine into tuples of (min, max) for each min and max of each col.
@@ -152,13 +152,13 @@ def k_means_random_restart(dataset, k, restarts, seed=None):
 
 def pseudo_random(seed=0xdeadbeef):
     """generate an infinite stream of pseudo-random numbers"""
-    state = (0xffffffff & seed)/0xffffffff
+    state = (0xffffffff & seed) / 0xffffffff
     while True:
         h = hashlib.sha256()
         h.update(bytes(str(state), encoding='utf8'))
         bits = int.from_bytes(h.digest()[-8:], 'big')
         state = bits >> 32
-        r = (0xffffffff & bits)/0xffffffff
+        r = (0xffffffff & bits) / 0xffffffff
         yield r
 
 
