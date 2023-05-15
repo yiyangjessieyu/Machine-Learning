@@ -46,46 +46,32 @@ def goodness(clusters):
     # centroids found from the mean of each cluster in each col
     centroids = [np.mean(cluster, axis=0) for cluster in clusters]
 
-    worst_separation = sum( # sum to find the mean, but don't need to divide by Nk coz math :)
+    worst_separation = sum(  # sum to find the mean, but don't need to divide by Nk coz math :)
         [
             # calculates the Euclidean distance || c1 - c2 ||
             # equivalent to calculating the mean of the min distance between centroids
             # distance between centroids equiv to average distance between points in different clusters.
-            np.linalg.norm(c1 - c2) # therefore mean of the min distances between clusters' points.
+            np.linalg.norm(c1 - c2)  # therefore mean of the min distances between clusters' points.
             for i, c1 in enumerate(centroids)
             for j, c2 in enumerate(centroids)
-            if i < j # ensures that each distance is calculated only once, as the distance of centroid i and j are same
-         ]
+            if i < j  # ensures that each distance is calculated only once, as the distance of centroid i and j are same
+        ]
     )
 
     worst_compactness = sum(
         [
             # calculates the Euclidean distance between a point and its centroid
             # where centroid is equiv to average distance between points in different clusters.
-            np.linalg.norm(point - cluster) # therefore mean of the max distances within each cluster's points
+            np.linalg.norm(point - cluster2)  # therefore mean of the max distances within each cluster's points
             for cluster in clusters
             for point in cluster
-         ]
+            for cluster2 in clusters
+        ]
     )
 
     # Ratio of how good the clustering is. Higher ratio means
     # 1) High separation between centroids, and 2) Tightly compacted data points in each cluster around their centroids.
     return worst_separation / worst_compactness
-
-# def find_distance(a, b):
-#     return np.linalg.norm(a, b, axis=1)
-#
-#
-# def sep(C):
-#     # TODO how does this ensure the minimum?
-#     return sum(min(find_distance(p1, p2)) for c1 in C for c2 in C for p1 in c1 for p2 in c2) / len(C)
-#
-# def cpt(C):
-#     # TODO how does this ensure the max?
-#     return sum([max(find_distance(p1, p2)) for c in C for p1 in c for p2 in c]) / len(C)
-#
-# def goodness(clusters):
-#     return sep(clusters)/cpt(clusters)
 
 
 def k_means_random_restart(dataset, k, restarts, seed=None):
@@ -97,57 +83,31 @@ def k_means_random_restart(dataset, k, restarts, seed=None):
     :param seed: random number seed.
     :return: centroids as a numpy array
     """
+    # finds the min of each col and max of each col
+    # zip() to combine into tuples of (min, max) for each min and max of each col.
+    # therefore a list of n tuples, where n = amount of cols
     bounds = list(zip(np.min(dataset, axis=0), np.max(dataset, axis=0)))
+
     r = pseudo_random(seed=seed) if seed else pseudo_random()
     models = []
+
     for _ in range(restarts):
         random_centroids = tuple(generate_random_vector(bounds, r)
                                  for _ in range(k))
         new_centroids = k_means(dataset, random_centroids)
         clusters = cluster_points(new_centroids, dataset)
+
+        # If any clusters don't have points assigned to it then skip the next iteration of the loop
+        # 0 points in cluster means that its centroid is not a good representative of any points in the dataset.
+        # Skipping to not use a poor set of centroids that lead to empty clusters.
         if any(len(c) == 0 for c in clusters):
             continue
+
         models.append((goodness(clusters), new_centroids))
-
-    print()
-    print("==========")
-    print()
-
-    print("[MAX GOODNESS]")
-    print(max(models, key=lambda x: x[0])[0])
-    print()
-
-    print("[MODELS]")
-    for model in models: print(model)
-    print()
 
     return max(models, key=lambda x: x[0])[1]
 
 
-# def k_means_random_restart(dataset, k, restarts, seed=None):
-#     # finds the min of each col and max of each col
-#     # zip() to combine into tuples of (min, max) for each min and max of each col.
-#     # therefore a list of n tuples, where n = amount of cols
-#     bounds = list(zip(np.min(dataset, axis=0), np.max(dataset, axis=0)))
-#
-#     r = pseudo_random(seed=seed) if seed else pseudo_random()
-#     models = []
-#
-#     for _ in range(restarts):
-#         random_centroids = tuple(generate_random_vector(bounds, r)
-#                                  for _ in range(k))
-#         new_centroids = k_means(dataset, random_centroids)
-#         clusters = cluster_points(new_centroids, dataset)
-#
-#         # If any clusters don't have points assigned to it then skip the next iteration of the loop
-#         # 0 points in cluster means that its centroid is not a good representative of any points in the dataset.
-#         # Skipping to not use a poor set of centroids that lead to empty clusters.
-#         if any(len(c) == 0 for c in clusters):
-#             continue
-#
-#         models.append((goodness(clusters), new_centroids))
-#
-#     return max(models, key=lambda x: x[0])[1]
 #
 
 def pseudo_random(seed=0xdeadbeef):
@@ -200,6 +160,5 @@ test_data, test_target = data[-5:, :], target[-5:]
 dataset = np.hstack((train_data, train_target.reshape((-1, 1))))
 
 centroids = k_means_random_restart(train_data, k=3, restarts=10)
-print()
 for c in sorted([f"{x:7.1f}" for x in centroid] for centroid in centroids):
     print(" ".join(c))
