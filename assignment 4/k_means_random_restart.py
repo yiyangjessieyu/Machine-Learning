@@ -42,13 +42,34 @@ def cluster_points(centroids, dataset):
 
 
 def goodness(clusters):
+    # centroids found from the mean of each cluster in each col
     centroids = [np.mean(cluster, axis=0) for cluster in clusters]
-    separation = sum(
-        [np.linalg.norm(c1 - c2) for i, c1 in enumerate(centroids) for j, c2 in enumerate(centroids) if i < j])
-    compactness = sum(
-        [np.linalg.norm(point - centroids[cluster_idx]) for cluster_idx, cluster in enumerate(clusters) for point in
-         cluster])
-    return separation / compactness
+
+    worst_separation = sum( # sum to find the mean, but don't need to divide by Nk coz math :)
+        [
+            # calculates the Euclidean distance || c1 - c2 ||
+            # equivalent to calculating the mean of the min distance between centroids
+            # distance between centroids equiv to average distance between points in different clusters.
+            np.linalg.norm(c1 - c2) # therefore mean of the min distances between clusters' points.
+            for i, c1 in enumerate(centroids)
+            for j, c2 in enumerate(centroids)
+            if i < j # ensures that each distance is calculated only once, as the distance of centroid i and j are same
+         ]
+    )
+
+    worst_compactness = sum(
+        [
+            # calculates the Euclidean distance between a point and its centroid
+            # where centroid is equiv to average distance between points in different clusters.
+            np.linalg.norm(point - centroids[i]) # therefore mean of the max distances within each cluster's points
+            for i, cluster in enumerate(clusters)
+            for point in cluster
+         ]
+    )
+
+    # Ratio of how good the clustering is. Higher ratio means
+    # 1) High separation between centroids, and 2) Tightly compacted data points in each cluster around their centroids.
+    return worst_separation / worst_compactness
 
 
 def k_means_random_restart(dataset, k, restarts, seed=None):
@@ -126,4 +147,14 @@ centroids = k_means_random_restart(train_data, k=3, restarts=10)
 #      cluster 2 -> label 0
 
 for c in sorted([f"{x:7.2}" for x in centroid] for centroid in centroids):
+    print(" ".join(c))
+
+wine = sklearn.datasets.load_wine()
+data, target = sklearn.utils.shuffle(wine.data, wine.target, random_state=3)
+train_data, train_target = data[:-5, :], target[:-5]
+test_data, test_target = data[-5:, :], target[-5:]
+dataset = np.hstack((train_data, train_target.reshape((-1, 1))))
+
+centroids = k_means_random_restart(train_data, k=3, restarts=10)
+for c in sorted([f"{x:7.1f}" for x in centroid] for centroid in centroids):
     print(" ".join(c))
