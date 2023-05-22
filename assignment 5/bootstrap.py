@@ -27,22 +27,17 @@ def bootstrap(dataset, sample_size):
     :param sample_size: samples the given dataset to produce samples of sample_size.
     :return:  Generator, when called produces an iterator itr that produces a new sample when next(itr) is called.
     """
+
+    r = pseudo_random()
     while True:
         current_size = 0
         sample_i = []
         while current_size < sample_size:
-            r = next(pseudo_random())
-            i = int(r*len(dataset))
+            i = int(next(r)*len(dataset))
             sample_i.append(i)
             current_size += 1
 
         yield dataset[sample_i]
-
-    # dataset_length = len(dataset)
-    # while True:
-    #     sample_indices = np.random.randint(0, dataset_length, sample_size)
-    #     sample = dataset[sample_indices]
-    #     yield sample
 
 
 dataset = np.array([[1, 0, 2, 3],
