@@ -1,4 +1,5 @@
 import hashlib
+import math
 from itertools import accumulate
 import operator
 
@@ -60,16 +61,10 @@ class weighted_bootstrap:
 
 def adaboost(learner, dataset, n_models):
     """
-    Builds a boosted ensemble model consisting of n_models amount of simple models made from the learner,
-    which were trained on weighted bootstrapped samples from the dataset.
-
-    A model is a function which takes a feature vector and returns a classification.
-
-    To compute the model's error on the dataset, add up the weight of the instances (rows) that are misclassified.
-        * This error is used to update the weights.
-        * It is also stored with the model so that later, when combining the outputs of the classifiers, it can be used
-        to compute the correct weight for the classifier.
-        * When e=0, define the value of log(e/(1-e)) to be -infinity.
+    Boosting is to generate a series of base learners which complement each other, where each learner to focus on the
+    mistakes of the previous learner by
+        * iteratively adding new base learners, and
+        * iteratively increase the accuracy of the combined model
 
     n = number of examples
     d = number of features
@@ -80,42 +75,44 @@ def adaboost(learner, dataset, n_models):
     :return: a boosted ensemble model
     """
 
-    weights = [1] * dataset.shape[0]  # Assign equal weight to each training instance so [1] * amount of rows
+    sample_size = dataset.shape[0] # n rows of examples in dataset
+    examples, targets = dataset[:, :-1], dataset[:, -1]
 
     def boosted_model(feature_vector):  # take a d length numpy array
 
+        models = []
+        model_weights = []
+        weights = np.ones(sample_size) / sample_size  # Assign equal weight to each training instance
+        weighted_dataset = weighted_bootstrap(dataset, weights, sample_size)
+
         # MODEL GENERATION
 
-        weighted_dataset = weighted_bootstrap(dataset, weights, sample_size)
-        models = []
+        for _ in range(n_models):  # Build a boosted ensemble model consisting of n_models amount of simple models,
+            new_model = learner(next(weighted_dataset))  # made from learners trained to weighted bootstrap samples
+            models.append(new_model)  # store resulting model
 
-        for i in range(n_models):
-            l_model = learner(next(weighted_dataset))  # Apply learning algorithm to weighted dataset
-            models.append(l_model) # store resulting model
+            predictions = np.array(new_model(example) for example in examples)
+            model_error = np.sum(weights * (predictions != targets))  # add up the weight of the instances (rows) that are misclassified.
 
-            e = # TODO Compute model’s error e on weighted dataset
-            if e == 0 or e >= 0.5:
-                break # Terminate model generation
+            if model_error == 0 or model_error >= 0.5:
+                break  # Terminate model generation
 
-            for example in dataset:
-                # TODO If classified correctly by model: Multiply instance’s weight by e/(1-e)
+            model_weight = np.log(model_error / (1 - model_error))  # TODO When e=0, define the value of log(e/(1-e)) to be -infinity.
+            weights *= np.exp(model_weight * (predictions != targets))
+            weights /= np.sum(weights)
 
-            # TODO Normalize weight of all instances
+            model_weights.append(model_weight)
 
+        # MODEL CLASSIFICATION
 
-        # CLASSIFICATION
+        class_weights = {target_class: 0 for target_class in np.unique(targets)} # Assign weight = 0 to all classes
 
-        # # • Given a collection of hypotheses (classification/regression models):
-        # # • Combine predictions by voting/averaging
-        # # • Each model receives equal weight
-        # ve = voting_ensemble(models)  # Create a wrapper that combines the classifiers’ predictions
+        for model, weight in zip(models, model_weights):
+            predicted_class = model(feature_vector)
+            # model_error = np.sum(weights * (predicted_class != targets))  # add up the weight of the instances (rows) that are misclassified.
+            class_weights[predicted_class] += -np.log(model_error / (1 - model_error)) * weight
 
-        # TODO Assign weight = 0 to all classes
-        # TODO For each of the t (or less) models:
-        # TODO For the class this model predicts
-        # TODO add –log e/(1-e) to this class’s weight
-
-        return # ve(feature_vector) # TODO return prediction of output - class with highest weight
+        return max(class_weights, key=class_weights.get)
 
     return boosted_model
 
