@@ -112,7 +112,6 @@ def adaboost(learner, dataset, n_models):
         # return max(results, key=results.get)
         return max(class_weights, key=class_weights.get)
 
-
     return boosted_model
 
 
